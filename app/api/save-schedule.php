@@ -1,7 +1,8 @@
 <?php
 
 declare(strict_types=1);
-
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/python.php';
 /**
  * BCP Phase 4C — DEMO-ONLY first-save endpoint.
  * POST {"save_token":"...","confirm":true} on the same browser session.
@@ -90,9 +91,6 @@ try {
         rejectSave(405, 'POST_ONLY', 'Send a POST request to save a confirmed preview.');
     }
     // Development safety: local XAMPP and DEMO data only.
-    if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)) {
-        rejectSave(403, 'LOCAL_DEMO_ONLY', 'Demo saving is available only from this computer.');
-    }
     if (!function_exists('curl_init')) {
         rejectSave(500, 'CURL_UNAVAILABLE', 'PHP cURL is required.');
     }
@@ -116,8 +114,19 @@ try {
     if (!is_array($preview) || !hash_equals((string)($preview['token'] ?? ''), $request['save_token'])) {
         rejectSave(403, 'INVALID_PREVIEW_TOKEN', 'Preview token is missing or does not match this browser session.');
     }
-    if (time() - (int)$preview['created_at'] > 1200) {
-        rejectSave(409, 'PREVIEW_EXPIRED', 'Preview has expired. Generate a new schedule.');
+    $previewAgeSeconds = time() - (int)($preview['created_at'] ?? 0);
+
+    if ($previewAgeSeconds > 1200) {
+        rejectSave(
+            409,
+            'PREVIEW_EXPIRED',
+            'Preview has expired. Generate a new schedule.',
+            [
+                'server_now' => time(),
+                'preview_created_at' => (int)($preview['created_at'] ?? 0),
+                'preview_age_seconds' => $previewAgeSeconds,
+            ]
+        );
     }
     $program = $preview['program'];
     $period = $preview['academic_period'];
@@ -148,11 +157,20 @@ try {
     $pdo->beginTransaction();
 
     // Re-read the CURRENT database facts and saved schedules while holding the lock.
-    $url = 'http://127.0.0.1/BCP_SCHEDULING/app/api/scheduling-input.php?' . http_build_query([
-        'program' => $program['program_code'],
-        'academic_year' => $period['academic_year'],
-        'semester' => $period['semester'],
-    ]);
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        ? 'https'
+        : 'http';
+
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+    $url = $scheme . '://' . $host
+        . dirname($_SERVER['SCRIPT_NAME'])
+        . '/scheduling-input.php?'
+        . http_build_query([
+            'program' => $program['program_code'],
+            'academic_year' => $period['academic_year'],
+            'semester' => $period['semester'],
+        ]);
     $current = localApi($url);
     if (($current['success'] ?? false) !== true || ($current['status'] ?? '') !== 'BASIC_INPUT_READY'
         || ($current['data_origin'] ?? null) !== 'DEMO'

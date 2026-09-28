@@ -8,7 +8,7 @@ authStart();
 authNoCache();
 
 
-$dashboard = '/app/dashboard/dashboard.php';
+$dashboard = 'app/dashboard/dashboard.php';
 
 
 if (authLoggedIn()) {
@@ -148,13 +148,13 @@ function loginEscape(string $text): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login | BCP Scheduling System</title>
-    <link rel="icon" href="app/images/BCP_LOGO.png" type="image/png">
+    <link rel="icon" href="app/assets/images/BCP_LOGO.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- External CSS link mapping to your assets folder -->
-    <link rel="stylesheet" href="/app/assets/css/login.css">
+    <link rel="stylesheet" href="app/assets/css/login.css">
 </head>
 
 <body class="bcp-login-page">

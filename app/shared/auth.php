@@ -7,7 +7,16 @@ declare(strict_types=1);
  * Central session and access protection.
  */
 
-const LOGIN_URL = '/index.php';
+function authLoginUrl(): string
+{
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+
+    if (str_starts_with($scriptName, '/BCP_SCHEDULING/')) {
+        return '/BCP_SCHEDULING/index.php';
+    }
+
+    return '/index.php';
+}
 const SESSION_IDLE_LIMIT = 1800;    // 30 minutes
 const SESSION_MAX_LIFETIME = 28800; // 8 hours
 
@@ -174,7 +183,7 @@ function authRequire(
             exit;
         }
 
-        header('Location: ' . LOGIN_URL, true, 303);
+        header('Location: ' . authLoginUrl(), true, 303);
         exit;
     }
 
@@ -207,7 +216,7 @@ function authRequire(
             exit;
         }
 
-        header('Location: ' . LOGIN_URL, true, 303);
+        header('Location: ' . authLoginUrl(), true, 303);
         exit;
     }
 

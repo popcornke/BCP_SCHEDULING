@@ -302,152 +302,140 @@ foreach ($requiredInputs as $key) {
 
 
 // ============================================
-// 6. CALL PYTHON OR-TOOLS OPTIMIZER
+// 6. CREATE BACKGROUND PYTHON JOB
 // ============================================
 
-$pythonUrl = pythonBaseUrl() . '/api/schedules/preview';
+$pythonUrl = pythonBaseUrl()
+    . '/api/schedules/jobs';
 
 try {
 
     $pythonResponse = callLocalApi(
         $pythonUrl,
         $input,
-        150
+        15
     );
 } catch (Throwable $exception) {
 
     error_log(
-        'BCP Python optimizer: '
+        'BCP Python job submission: '
             . $exception->getMessage()
     );
 
     respondError(
         502,
         'PYTHON_CONNECTION_FAILED',
-        'Unable to communicate with the Python optimizer.'
+        'Unable to start the Python scheduling job.'
     );
 }
 
-$result = $pythonResponse['data'];
+$jobResponse = $pythonResponse['data'];
 
 
 // ============================================
-// 7. HANDLE PYTHON HTTP ERRORS
+// 7. VERIFY JOB CREATION
 // ============================================
 
-if ($pythonResponse['http_status'] !== 200) {
+if (
+    $pythonResponse['http_status'] !== 200
+    || ($jobResponse['success'] ?? false) !== true
+    || ($jobResponse['status'] ?? '')
+    !== 'SCHEDULE_JOB_QUEUED'
+    || !is_string($jobResponse['job_id'] ?? null)
+) {
 
     respondError(
         502,
-        'PYTHON_API_ERROR',
-        'Python optimizer returned an HTTP error.',
+        'PYTHON_JOB_CREATE_FAILED',
+        'Python could not create the scheduling job.',
         [
             'python_http_status' =>
             $pythonResponse['http_status'],
 
-            'python_response' => $result,
+            'python_response' =>
+            $jobResponse,
         ]
     );
 }
 
+$jobId = $jobResponse['job_id'];
+
 
 // ============================================
-// 8. VERIFY COMPLETE PREVIEW
+// 8. STORE INPUT FOR FINAL PREVIEW ESCROW
 // ============================================
 
-if (($result['success'] ?? false) === true) {
+try {
 
-    $expectedMeetings = count(
-        $schedulingInput['section_subjects']
-    ) * 2;
+    ini_set('session.use_strict_mode', '1');
 
-    $returnedMeetings = count(
-        $result['assignments'] ?? []
-    );
+    session_name('BCP_SCHED_DEMO');
+
+    session_set_cookie_params([
+        'httponly' => true,
+        'samesite' => 'Strict',
+        'secure' =>
+        !empty($_SERVER['HTTPS'])
+            && $_SERVER['HTTPS'] !== 'off',
+        'path' => '/',
+    ]);
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+
+        if (!session_start()) {
+
+            throw new RuntimeException(
+                'Cannot start scheduling job session.'
+            );
+        }
+    }
 
     if (
-        ($result['status'] ?? '')
-        !== 'DEMO_PREVIEW_GENERATED'
-        || $returnedMeetings !== $expectedMeetings
-        || (int) (
-            $result['returned_meetings'] ?? -1
-        ) !== $expectedMeetings
+        !isset($_SESSION['bcp_schedule_jobs'])
+        || !is_array($_SESSION['bcp_schedule_jobs'])
     ) {
 
-        respondError(
-            422,
-            'INCOMPLETE_PREVIEW',
-            'Python returned an incomplete scheduling preview.',
-            [
-                'expected_meetings' =>
-                $expectedMeetings,
-
-                'returned_meetings' =>
-                $returnedMeetings,
-            ]
-        );
+        $_SESSION['bcp_schedule_jobs'] = [];
     }
+
+    $_SESSION['bcp_schedule_jobs'][$jobId] = [
+        'created_at' => time(),
+        'input' => $input,
+    ];
+
+    session_write_close();
+} catch (Throwable $exception) {
+
+    error_log(
+        'BCP job session storage failed: '
+            . $exception->getMessage()
+    );
+
+    respondError(
+        500,
+        'JOB_SESSION_FAILED',
+        'Scheduling job started but its preview context could not be stored.'
+    );
 }
 
 
 // ============================================
-// 9. RETURN PYTHON RESULT
+// 9. RETURN IMMEDIATELY
 // ============================================
-
-// The returned schedule is a DEMO preview.
-//
-// No schedule is inserted into MySQL here.
-
-$result['database_write'] = false;
-
-$result['school_wide_validation_complete'] = false;
-
-// PHASE 4C: store the exact audited preview on the PHP server.
-// A returned token cannot be used to upload a different timetable.
-$result['save_ready_demo'] = false;
-if (
-    ($result['success'] ?? false) === true
-    && ($result['status'] ?? '') === 'DEMO_PREVIEW_GENERATED'
-    && ($result['audit']['passed'] ?? false) === true
-    && ($result['existing_snapshot_constraints_applied'] ?? false) === true
-    && ($input['data_origin'] ?? '') === 'DEMO'
-) {
-    try {
-        ini_set('session.use_strict_mode', '1');
-        session_name('BCP_SCHED_DEMO');
-        session_set_cookie_params([
-            'httponly' => true,
-            'samesite' => 'Strict',
-            'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
-            'path' => '/',
-        ]);
-        if (!session_start()) {
-            throw new RuntimeException('Cannot start preview session.');
-        }
-        $token = bin2hex(random_bytes(32));
-        $_SESSION['bcp_schedule_preview'] = [
-            'token' => $token,
-            'created_at' => time(),
-            'program' => $input['program'],
-            'academic_period' => $input['academic_period'],
-            'input_hash' => hash('sha256', json_encode(
-                $input['scheduling_input'],
-                JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR
-            )),
-            'result' => $result,
-        ];
-        session_write_close();
-        $result['save_token'] = $token;
-        $result['save_ready_demo'] = true;
-    } catch (Throwable $exception) {
-        error_log('BCP preview escrow failed: ' . $exception->getMessage());
-        // Generation succeeded, but saving is disabled if escrow fails.
-        $result['save_ready_demo'] = false;
-    }
-}
 
 echo json_encode(
-    $result,
+    [
+        'success' => true,
+        'status' => 'SCHEDULE_JOB_QUEUED',
+
+        'job_id' => $jobId,
+
+        'job_status' =>
+        $jobResponse['job_status']
+            ?? 'QUEUED',
+
+        'database_write' => false,
+    ],
     JSON_UNESCAPED_UNICODE
         | JSON_INVALID_UTF8_SUBSTITUTE
 );
