@@ -34,3 +34,6 @@ Thumbs.db
 # Database dumps
 *.sql.gz
 *.dump
+
+# Backup directory
+backup/
