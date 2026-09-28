@@ -1,4 +1,3 @@
-
 """
 BCP AUTOMATIC CLASS SCHEDULING SYSTEM
 
@@ -24,6 +23,8 @@ EVEN SECTIONS:
     F2F    = Tuesday, Thursday, Saturday
     ONLINE = Monday, Wednesday, Friday
 """
+
+import os
 
 from collections import defaultdict
 
@@ -67,7 +68,9 @@ TOTAL_WEEK_SLOTS = (
     len(DAYS) * SLOTS_PER_DAY
 )
 
-MAX_SOLVE_SECONDS = 120
+MAX_SOLVE_SECONDS = float(
+    os.getenv("MAX_SOLVE_SECONDS", "120")
+)
 
 
 # ============================================
