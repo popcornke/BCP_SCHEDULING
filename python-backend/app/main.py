@@ -6,7 +6,7 @@ import logging
 from fastapi import FastAPI, Body, HTTPException
 from ortools.sat.python import cp_model
 
-from app.scheduler import solve_schedule
+from app.scheduler import solve_schedule, MAX_SOLVE_SECONDS
 from app.conflict_checker import audit_schedule
 from app.exam_routes import router as exam_router
 
@@ -174,13 +174,12 @@ def health_check():
         "optimizer": "Google OR-Tools CP-SAT",
         "optimizer_import": "successful",
         "solver_ready": True,
+        "max_solve_seconds": MAX_SOLVE_SECONDS,
         "message": (
             "Python API and scheduling "
             "preview endpoint are available."
         ),
     }
-
-
 # ============================================
 # SYNCHRONOUS PREVIEW
 #
