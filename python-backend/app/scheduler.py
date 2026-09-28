@@ -2224,11 +2224,10 @@ def solve_schedule(payload):
     # retain the prior preference for earlier first-year F2F classes.
     # One extra ONLINE vacant slot outweighs every possible change to the
     # bounded first-year F2F-position objective. HARD rules still take priority.
-    online_gap_weight = len(first_year_positions) * (SLOTS_PER_DAY - 1) + 1
-    model.Minimize(
-        online_gap_weight * sum(online_gap_variables)
-        + sum(first_year_positions)
-    )
+    # Feasibility-first production solve.
+# Hard constraints remain unchanged.
+# Soft optimization is temporarily disabled
+# so CP-SAT can find a complete valid timetable faster.
 
     # ========================================
     # 18. RUN OR-TOOLS OPTIMIZER
