@@ -1,6 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . '/config/python.php';
 /**
  * BCP AUTOMATIC CLASS SCHEDULING SYSTEM
  *
@@ -39,7 +41,7 @@ function respondError(
             $details
         ),
         JSON_UNESCAPED_UNICODE
-        | JSON_INVALID_UTF8_SUBSTITUTE
+            | JSON_INVALID_UTF8_SUBSTITUTE
     );
 
     exit;
@@ -82,8 +84,8 @@ function callLocalApi(
         $json = json_encode(
             $postData,
             JSON_UNESCAPED_UNICODE
-            | JSON_INVALID_UTF8_SUBSTITUTE
-            | JSON_THROW_ON_ERROR
+                | JSON_INVALID_UTF8_SUBSTITUTE
+                | JSON_THROW_ON_ERROR
         );
 
         $options[CURLOPT_POST] = true;
@@ -113,7 +115,7 @@ function callLocalApi(
 
         throw new RuntimeException(
             'Local API connection failed: '
-            . $curlError
+                . $curlError
         );
     }
 
@@ -196,11 +198,17 @@ $query = http_build_query([
     'semester' => $semester,
 ]);
 
-$inputUrl = (
-    'http://127.0.0.1/BCP_SCHEDULING/'
-    . 'app/api/scheduling-input.php?'
-    . $query
-);
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    ? 'https'
+    : 'http';
+
+$host = $_SERVER['HTTP_HOST'] ?? '';
+
+$inputUrl = $scheme
+    . '://'
+    . $host
+    . '/app/api/scheduling-input.php?'
+    . $query;
 
 
 // ============================================
@@ -214,12 +222,11 @@ try {
         null,
         30
     );
-
 } catch (Throwable $exception) {
 
     error_log(
         'BCP input loader: '
-        . $exception->getMessage()
+            . $exception->getMessage()
     );
 
     respondError(
@@ -246,9 +253,9 @@ if ($inputResponse['http_status'] !== 200) {
 if (
     ($input['success'] ?? false) !== true
     || ($input['status'] ?? '')
-        !== 'BASIC_INPUT_READY'
+    !== 'BASIC_INPUT_READY'
     || ($input['data_origin'] ?? '')
-        !== 'DEMO'
+    !== 'DEMO'
 ) {
 
     respondError(
@@ -257,7 +264,7 @@ if (
         'Scheduling inputs are not ready.',
         [
             'validation_errors' =>
-                $input['validation_errors'] ?? [],
+            $input['validation_errors'] ?? [],
         ]
     );
 }
@@ -310,10 +317,7 @@ foreach ($requiredInputs as $key) {
 // 6. CALL PYTHON OR-TOOLS OPTIMIZER
 // ============================================
 
-$pythonUrl = (
-    'http://127.0.0.1:8000/'
-    . 'api/schedules/preview'
-);
+$pythonUrl = pythonBaseUrl() . '/api/schedules/preview';
 
 try {
 
@@ -322,12 +326,11 @@ try {
         $input,
         150
     );
-
 } catch (Throwable $exception) {
 
     error_log(
         'BCP Python optimizer: '
-        . $exception->getMessage()
+            . $exception->getMessage()
     );
 
     respondError(
@@ -352,7 +355,7 @@ if ($pythonResponse['http_status'] !== 200) {
         'Python optimizer returned an HTTP error.',
         [
             'python_http_status' =>
-                $pythonResponse['http_status'],
+            $pythonResponse['http_status'],
 
             'python_response' => $result,
         ]
@@ -376,7 +379,7 @@ if (($result['success'] ?? false) === true) {
 
     if (
         ($result['status'] ?? '')
-            !== 'DEMO_PREVIEW_GENERATED'
+        !== 'DEMO_PREVIEW_GENERATED'
         || $returnedMeetings !== $expectedMeetings
         || (int) (
             $result['returned_meetings'] ?? -1
@@ -389,10 +392,10 @@ if (($result['success'] ?? false) === true) {
             'Python returned an incomplete scheduling preview.',
             [
                 'expected_meetings' =>
-                    $expectedMeetings,
+                $expectedMeetings,
 
                 'returned_meetings' =>
-                    $returnedMeetings,
+                $returnedMeetings,
             ]
         );
     }
@@ -458,5 +461,5 @@ if (
 echo json_encode(
     $result,
     JSON_UNESCAPED_UNICODE
-    | JSON_INVALID_UTF8_SUBSTITUTE
+        | JSON_INVALID_UTF8_SUBSTITUTE
 );
