@@ -189,40 +189,25 @@ if (
 
 
 // ============================================
-// 3. PREPARE SCHEDULING INPUT URL
+// 3. LOAD SCHEDULING INPUT DIRECTLY
 // ============================================
 
-$query = http_build_query([
-    'program' => $programCode,
-    'academic_year' => $academicYear,
-    'semester' => $semester,
-]);
+$_GET['program'] = $programCode;
+$_GET['academic_year'] = $academicYear;
+$_GET['semester'] = (string) $semester;
 
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-    ? 'https'
-    : 'http';
-
-$host = $_SERVER['HTTP_HOST'] ?? '';
-
-$inputUrl = $scheme
-    . '://'
-    . $host
-    . '/app/api/scheduling-input.php?'
-    . $query;
-
-
-// ============================================
-// 4. LOAD DATABASE SCHEDULING INPUT
-// ============================================
+ob_start();
 
 try {
 
-    $inputResponse = callLocalApi(
-        $inputUrl,
-        null,
-        30
-    );
+    require __DIR__ . '/scheduling-input.php';
+
+    $rawInput = ob_get_clean();
 } catch (Throwable $exception) {
+
+    if (ob_get_level() > 0) {
+        ob_end_clean();
+    }
 
     error_log(
         'BCP input loader: '
@@ -230,22 +215,25 @@ try {
     );
 
     respondError(
-        502,
-        'INPUT_CONNECTION_FAILED',
-        'Unable to connect to the scheduling input API.'
+        500,
+        'INPUT_LOAD_FAILED',
+        'Unable to load scheduling input.'
     );
 }
 
-$input = $inputResponse['data'];
+$input = json_decode(
+    $rawInput,
+    true
+);
 
-if ($inputResponse['http_status'] !== 200) {
+if (!is_array($input)) {
 
     respondError(
-        502,
-        'INPUT_API_ERROR',
-        'Scheduling input API returned an error.',
+        500,
+        'INPUT_INVALID_JSON',
+        'Scheduling input returned invalid JSON.',
         [
-            'input_response' => $input,
+            'raw_response' => $rawInput,
         ]
     );
 }
