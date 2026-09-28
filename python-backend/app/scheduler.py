@@ -67,7 +67,7 @@ TOTAL_WEEK_SLOTS = (
     len(DAYS) * SLOTS_PER_DAY
 )
 
-MAX_SOLVE_SECONDS = 120
+MAX_SOLVE_SECONDS = 45
 
 
 # ============================================
