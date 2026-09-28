@@ -1,0 +1,47 @@
+/* BCP Module 9 Phase 9B only: no element-wide or global CSS selectors. */
+.tb9b-app{box-sizing:border-box;max-width:1480px;margin:auto;padding:26px 22px 46px;color:#19354b;font:15px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}
+.tb9b-app *{box-sizing:border-box}
+.tb9b-app .tb9b-hero{background:linear-gradient(120deg,#0d3c62,#17698a);border-radius:20px;color:#fff;padding:22px 25px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.tb9b-app .tb9b-kicker{font-size:11px;letter-spacing:.12em;font-weight:800;color:#bfe2f2;margin:0 0 9px}
+.tb9b-app h1{font-size:clamp(23px,3vw,34px);line-height:1.2;margin:0}
+.tb9b-app .tb9b-hero p:last-child{margin:8px 0 0;color:#e0eff8}
+.tb9b-app .tb9b-pill{border:1px solid #ffffff66;background:#ffffff1f;border-radius:99px;padding:8px 13px;font-weight:750;font-size:12px;white-space:nowrap}
+.tb9b-app .tb9b-alert{border:1px solid #e7d297;background:#fff8e2;color:#5a4812;border-radius:13px;padding:12px 15px;margin:15px 0}
+.tb9b-app .tb9b-alert a{color:#075f88}
+.tb9b-app .tb9b-panel{margin-top:15px;background:#fff;border:1px solid #dce6ed;border-radius:18px;padding:22px;box-shadow:0 12px 28px #20394e0a}
+.tb9b-app .tb9b-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:15px}
+.tb9b-app .tb9b-heading>div{display:flex;align-items:center;gap:11px}
+.tb9b-app h2{font-size:clamp(18px,2vw,22px);margin:0}.tb9b-app h3{font-size:15px;margin:0 0 5px}
+.tb9b-app .tb9b-step{display:inline-flex;align-items:center;justify-content:center;min-width:35px;height:35px;border-radius:11px;background:#e9f5fb;color:#0c567d;font-weight:800}
+.tb9b-app .tb9b-muted{color:#617585;font-size:12px}
+.tb9b-app .tb9b-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tb9b-app .tb9b-form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}
+.tb9b-app select{appearance:auto;border:1px solid #c8d8e3;border-radius:10px;background:#fff;color:#18374a;width:100%;min-height:44px;padding:8px 10px;font:inherit}
+.tb9b-app .tb9b-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+.tb9b-app button{background:#0c567e;color:#fff;border:0;border-radius:10px;padding:10px 15px;font:inherit;font-weight:700;cursor:pointer}
+.tb9b-app button:hover:not(:disabled){background:#063d5c}.tb9b-app button:disabled{opacity:.53;cursor:not-allowed}
+.tb9b-app .tb9b-secondary{background:#eaf2f7;color:#0c567e}.tb9b-app .tb9b-secondary:hover:not(:disabled){background:#dae8f1}
+.tb9b-app button:focus-visible,.tb9b-app select:focus-visible,.tb9b-app a:focus-visible{outline:3px solid #54a6c9;outline-offset:2px}
+.tb9b-app .tb9b-status{color:#5f7281;font-size:13px;margin:13px 0 0}.tb9b-app .tb9b-status[data-error=true]{color:#aa2b2b}
+.tb9b-app .tb9b-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:17px}
+.tb9b-app .tb9b-metric{border:1px solid #e4ebf0;background:#f3f8fb;border-radius:12px;padding:13px;display:flex;flex-direction:column;gap:4px}
+.tb9b-app .tb9b-metric span{font-size:12px;color:#586e7c}.tb9b-app .tb9b-metric strong{font-size:23px}
+.tb9b-app .tb9b-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.tb9b-app .tb9b-timeline{border:1px solid #e0eaf0;border-radius:13px;padding:14px;min-width:0}
+.tb9b-app .tb9b-timeline p{font-size:12px;color:#687d8b;margin:0 0 11px}
+.tb9b-app .tb9b-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.tb9b-app .tb9b-slot{border-radius:8px;border:1px solid #dbe5ec;padding:8px 7px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tb9b-app .tb9b-slot span{font-size:11px;white-space:nowrap}.tb9b-app .tb9b-slot strong{font-size:10px;letter-spacing:.035em}
+.tb9b-app .tb9b-on{background:#e4f5ed;color:#146848;border-color:#c2e5d3}.tb9b-app .tb9b-off{background:#f0f2f4;color:#687784}
+.tb9b-app .tb9b-changed{outline:2px solid #df9c20;outline-offset:-2px;background:#fff0ca;color:#704608}
+.tb9b-app .tb9b-changed small{font-size:9px;font-weight:800}
+.tb9b-app .tb9b-window-list{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:13px}
+.tb9b-app .tb9b-window{background:#f4f8fb;border-radius:12px;padding:12px}.tb9b-app .tb9b-window p{font-size:12px;margin:4px 0;color:#536a79;overflow-wrap:anywhere}
+.tb9b-app .tb9b-count{border-radius:99px;padding:5px 10px;background:#fff0cf;color:#825900;font-size:12px;font-weight:800}
+.tb9b-app .tb9b-table-wrap{overflow:auto;border:1px solid #e3eaf0;border-radius:10px;max-height:450px;margin-top:11px}
+.tb9b-app table{border-collapse:collapse;width:100%;white-space:nowrap;font-size:12px}.tb9b-app th,.tb9b-app td{border-bottom:1px solid #e8edf0;text-align:left;padding:9px 12px}
+.tb9b-app th{position:sticky;top:0;background:#eaf3f8;color:#31566c}.tb9b-app tbody tr:nth-child(even){background:#fafcfe}
+.tb9b-app .tb9b-endnote{margin-top:13px;margin-bottom:0}
+@media(max-width:920px){.tb9b-app .tb9b-form{grid-template-columns:repeat(2,minmax(0,1fr))}.tb9b-app .tb9b-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.tb9b-app{padding:12px 9px 35px}.tb9b-app .tb9b-panel{padding:14px}.tb9b-app .tb9b-form{grid-template-columns:1fr}.tb9b-app .tb9b-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tb9b-app .tb9b-compare,.tb9b-app .tb9b-window-list{grid-template-columns:1fr}}
+@media print{.tb9b-app{padding:0;max-width:none;color:#111;font-size:11px}.tb9b-app .tb9b-hero{background:#fff;color:#111;border:0;border-bottom:2px solid #222;border-radius:0;padding:7px 0}.tb9b-app .tb9b-hero p{color:#333!important}.tb9b-app .tb9b-alert:not(.tb9b-endnote),.tb9b-app .tb9b-control-panel .tb9b-form,.tb9b-app .tb9b-actions,.tb9b-app .tb9b-pill{display:none!important}.tb9b-app .tb9b-panel{box-shadow:none;border:0;padding:0;margin-top:10px}.tb9b-app .tb9b-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.tb9b-app .tb9b-slot{break-inside:avoid;padding:3px}.tb9b-app .tb9b-slot span{font-size:9px}.tb9b-app .tb9b-slot strong{font-size:8px}.tb9b-app .tb9b-table-wrap{max-height:none;overflow:visible;border:0}.tb9b-app th{position:static}.tb9b-app tr{break-inside:avoid}.tb9b-app .tb9b-endnote{display:block}}

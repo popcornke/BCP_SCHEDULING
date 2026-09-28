@@ -1,0 +1,25 @@
+/* Module 8 only: every selector is anchored within .clone-app; no global styles. */
+.clone-app{--clone-ink:#1b2b42;--clone-blue:#2a5597;--clone-line:#d6e2f6;--clone-muted:#60728b;--clone-paper:#fff;--clone-surface:#f6f9ff;font:15px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--clone-ink);background:var(--clone-surface);padding:clamp(14px,3vw,40px);min-height:100vh;box-sizing:border-box}
+.clone-app *{box-sizing:border-box}
+.clone-app .clone-hero,.clone-app .clone-panel{max-width:1300px;margin:0 auto 22px;background:var(--clone-paper);border:1px solid var(--clone-line);border-radius:22px;padding:clamp(18px,2.5vw,30px);box-shadow:0 12px 38px rgba(27,43,66,.035)}
+.clone-app .clone-hero{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.clone-app .clone-kicker{color:var(--clone-blue);font-size:12px;letter-spacing:.15em;font-weight:750;margin:0 0 6px}
+.clone-app h1{font-size:clamp(25px,4vw,42px);letter-spacing:-.035em;line-height:1.12;margin:0 0 7px}
+.clone-app h2{font-size:23px;margin:0}.clone-app h3{font-size:17px;margin:22px 0 10px}
+.clone-app p{margin:6px 0;color:var(--clone-muted)}
+.clone-app .clone-pill{border:1px solid var(--clone-line);border-radius:999px;background:#f0f5ff;padding:9px 14px;white-space:nowrap;font-size:12px;color:var(--clone-blue);font-weight:750}
+.clone-app .clone-heading{display:flex;align-items:center;gap:14px;margin-bottom:20px}.clone-app .clone-step{display:grid;place-items:center;border-radius:13px;background:#e5f3ef;color:#136c58;font-weight:800;width:44px;height:44px;flex:0 0 44px}
+.clone-app .clone-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.clone-app label{display:grid;gap:8px;font-size:13px;font-weight:700}.clone-app select{width:100%;font:inherit;border:1px solid #cbd9ef;background:#fff;color:var(--clone-ink);min-height:51px;border-radius:12px;padding:10px 12px}
+.clone-app select:focus-visible,.clone-app button:focus-visible{outline:3px solid #97b8ef;outline-offset:2px}
+.clone-app button{border:1px solid var(--clone-blue);border-radius:12px;padding:12px 19px;color:#fff;background:var(--clone-blue);font:inherit;font-weight:700;cursor:pointer;transition:transform .15s,background .15s}
+.clone-app button:hover:not(:disabled){transform:translateY(-1px);background:#1c4179}.clone-app button:disabled{cursor:not-allowed;opacity:.48}.clone-app button.clone-secondary{background:#fff;color:var(--clone-blue)}
+.clone-app .clone-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.clone-app .clone-status{background:#eef7f3;color:#19644f;border-radius:12px;padding:12px 15px;margin:16px 0}.clone-app .clone-status[data-error=true]{background:#fff1e9;color:#813c1c}
+.clone-app .clone-help{font-size:13px}.clone-app .clone-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.clone-app .clone-stats>div{padding:15px;background:#f6f9ff;border:1px solid var(--clone-line);border-radius:14px}.clone-app .clone-stats span{display:block;font-size:12px;color:var(--clone-muted)}.clone-app .clone-stats strong{display:block;font-size:25px;margin-top:3px}
+.clone-app .clone-findings{padding:0;list-style:none;display:grid;gap:10px}.clone-app .clone-findings li{border:1px solid #f3d3b2;border-radius:12px;padding:12px 15px;background:#fff9f2}.clone-app .clone-findings strong{font-size:12px;color:#8c5019}.clone-app .clone-findings p{margin:4px 0}.clone-app .clone-requirements{padding-left:21px;color:var(--clone-muted)}.clone-app .clone-requirements li{margin:5px 0}
+.clone-app .clone-warning,.clone-app .clone-notice{margin-top:20px;border:1px solid #f1d1ae;background:#fff9ef;padding:15px;border-radius:13px;color:#74491e}.clone-app .clone-warning strong{display:block;margin-bottom:5px}
+.clone-app .clone-table-scroll{overflow-x:auto}.clone-app table{width:100%;border-collapse:collapse;font-size:13px}.clone-app th,.clone-app td{padding:10px 12px;border-bottom:1px solid var(--clone-line);text-align:left;white-space:nowrap}.clone-app th{background:#f1f6ff;font-weight:750}
+@media(max-width:760px){.clone-app .clone-hero{display:block}.clone-app .clone-pill{display:inline-block;margin-top:12px}.clone-app .clone-form{grid-template-columns:1fr}.clone-app .clone-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:440px){.clone-app .clone-stats{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.clone-app button{transition:none}}
+@media print{.clone-app{padding:0;background:#fff}.clone-app .clone-hero,.clone-app .clone-panel{box-shadow:none;border:0;margin:0;border-radius:0;padding:10px}.clone-app .clone-form,.clone-app .clone-actions,.clone-app .clone-status,.clone-app .clone-help{display:none!important}.clone-app .clone-table-scroll{overflow:visible}.clone-app table{font-size:11px}.clone-app tr{break-inside:avoid}}

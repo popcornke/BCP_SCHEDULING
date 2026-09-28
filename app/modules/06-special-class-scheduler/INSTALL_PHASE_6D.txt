@@ -1,0 +1,41 @@
+BCP Module 6 — Phase 6D (no existing class/exam/save data modifications)
+
+PRECHECK / BACKUP
+1. Export bcp_scheduling as an SQL backup in phpMyAdmin.
+2. Select bcp_scheduling (not information_schema); import database/011_special_class_policies.sql ONCE.
+   Creates special_class_policies only. Does NOT insert any approved policies.
+3. Replace app/modules/06-special-class-scheduler/special-class-preview.php.
+4. Replace app/modules/06-special-class-scheduler/special-class-scheduler.php.
+5. Add python-backend/app/special_class_routes.py; KEEP Phase 6C solver/audit and all existing Python files.
+6. Add these two lines in python-backend/app/main.py AFTER the existing app = FastAPI(...) initialization:
+
+from app.special_class_routes import router as special_class_router
+app.include_router(special_class_router)
+
+Do not replace or duplicate the existing main.py or app initialization.
+
+TEST WHILE SCHOOL POLICY IS STILL PENDING
+GET http://localhost/BCP_SCHEDULING/app/modules/06-special-class-scheduler/special-class-preview.php?period_id=1&program_id=4&class_type=REMEDIAL
+Expected: SPECIAL_CLASS_POLICY_PENDING, schedule_preview_available=false, database_write=false.
+Prepare a new special-class request in the existing UI and check that Generate weekly preview remains DISABLED.
+The previous September 2–23 occurrences are in the past: choose a new prospective range.
+
+WHEN BCP ACTUALLY APPROVES THE SPECIAL CLASS POLICY
+- Do NOT invent duration, delivery mode, approval reference, approver or document hash.
+- An authorized school staff member must confirm the policy and documentary evidence.
+- The authorized DB operator must record the confirmed policy through the institution's controlled process;
+  this package deliberately contains NO approval-creation endpoint or preapproved demo values.
+- A status or reference typed by a browser user is NOT evidence of school approval.
+- If valid policy metadata is present, configure a random >=32-character BCP_INTERNAL_SCHEDULER_KEY
+  as an environment variable in BOTH Apache/PHP and the Python backend; do not put it in the repo
+  or in URLs. Restart both services. Keep the FastAPI port accessible only on loopback.
+- The preview will then use fresh server-fetched DB facts and the existing independent checker.
+- No permanent special-class saving is implemented. All previews remain UNSAVED.
+
+IMPORTANT LIMITATIONS
+- The metadata checks do NOT independently authenticate the human approver or validate the
+  document against its hash. Actual approved workflow / authentication must exist first.
+- This package has not been run against the user's live MySQL/PHP/Python environment.
+- Phase 6C solver accepts supported 30-minute increments derived from DB time slots;
+  if school policy requires a different duration, update the solver before using the preview.
+- Test official school-calendar constraints and historical date policies before production use.

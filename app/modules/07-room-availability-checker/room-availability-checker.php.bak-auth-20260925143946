@@ -1,0 +1,181 @@
+<?php
+declare(strict_types=1);
+/** Module 7 / DEMO: self-contained, read-only room availability viewer. */
+if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) { http_response_code(403); exit('Local DEMO access only.'); }
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+$APP_ROOT = '../../';$ACTIVE_NAV = 'room_checker';
+
+$role = htmlspecialchars($_SESSION['role'] ?? 'Admin', ENT_QUOTES, 'UTF-8');$initial = strtoupper(substr($_SESSION['first_name'] ?? 'U', 0, 1));$dashboardDate = new DateTimeImmutable('now', new DateTimeZone('Asia/Manila'));
+?>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Room Availability Checker | BCP</title>
+<link rel="icon" href="../../images/BCP_LOGO.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<link rel="stylesheet" href="../../assets/css/room-availability-checker.css">
+</head>
+<body>
+
+<?php require_once __DIR__ . '/../../includes/sidebar.php'; ?>
+
+<div class="main">
+    <div class="topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <span class="topbar-spacer"></span>
+        <div class="topbar-right">
+            <span class="role-badge">
+                <i class="fa-solid fa-user-tie" style="color:#2563eb;"></i>
+                <?= $role ?>
+            </span>
+            <a href="../../auth/account.php" class="avatar" title="Account Settings">
+                <?= $initial ?>
+            </a>
+        </div>
+    </div>
+
+    <main class="content ra-app" id="raApp">
+      <header class="ra-hero">
+        <div>
+          <p class="ra-eyebrow">BCP CLASS SCHEDULING SYSTEM · MODULE 7</p>
+          <h1>Room Availability Checker</h1>
+          <p>Find a suitable room using current saved timetable records. No room is reserved by a search.</p>
+        </div>
+        <span class="ra-pill">READ-ONLY · DEMO</span>
+      </header>
+      
+      <section class="ra-panel ra-controls" aria-labelledby="raFiltersTitle">
+        <div class="ra-head">
+          <h2 id="raFiltersTitle">Find a room</h2>
+          <p>Select a date and an actual time interval. Filters update automatically.</p>
+        </div>
+        <form id="raForm" class="ra-fields">
+          <label>Academic period<select id="raPeriod" required><option value="">Loading…</option></select></label>
+          <label>Program<select id="raProgram"><option value="0">All programs</option></select></label>
+          <label>Date<input id="raDate" type="date" required></label>
+          <label>Start time<input id="raStart" type="time" step="1800" value="08:00" required></label>
+          <label>End time<input id="raEnd" type="time" step="1800" value="10:00" required></label>
+          <label>Minimum seats<input id="raCapacity" type="number" min="0" max="10000" step="1" value="0"></label>
+          <label>Room type
+            <select id="raType">
+              <option value="">All room types</option>
+              <option value="GENERAL">General</option>
+              <option value="LABORATORY">Laboratory</option>
+              <option value="SPECIALIZED">Specialized</option>
+            </select>
+          </label>
+          <label>Display
+            <select id="raDisplay">
+              <option value="ALL">All rooms</option>
+              <option value="AVAILABLE">Available only</option>
+              <option value="OCCUPIED">Occupied only</option>
+              <option value="UNAVAILABLE">Unavailable / unconfigured</option>
+              <option value="NOT_ELIGIBLE">Not eligible for request</option>
+            </select>
+          </label>
+          <label class="ra-search">Search room or building<input id="raSearch" type="search" placeholder="e.g. BSIT-201, building…" maxlength="70"></label>
+          <div class="ra-actions">
+            <button type="button" id="raPrint" class="ra-light" disabled>Print report</button>
+          </div>
+        </form>
+        <p id="raStatus" role="status" aria-live="polite" class="ra-status">Loading saved scheduling data…</p>
+      </section>
+      
+      <section class="ra-panel ra-results" aria-labelledby="raResultsTitle">
+        <div class="ra-results-head">
+          <div>
+            <h2 id="raResultsTitle">Room availability</h2>
+            <p id="raSubtitle">Select a date and time to view current occupancy.</p>
+          </div>
+          <span class="ra-pill" id="raCount">—</span>
+        </div>
+        
+        <div class="ra-stats">
+          <div><span>Available</span><strong id="raAvailable">—</strong></div>
+          <div><span>Occupied</span><strong id="raOccupied">—</strong></div>
+          <div><span>Unavailable / unconfigured</span><strong id="raUnavailable">—</strong></div>
+          <div><span>Not eligible</span><strong id="raNotEligible">—</strong></div>
+        </div>
+        
+        <div id="raRows" class="ra-rows">
+          <p class="ra-empty">Checking current room records…</p>
+        </div>
+        
+        <p class="ra-disclaimer">As-recorded availability only. Regular classes repeat by weekday; examination and saved special-class bookings use exact dates. This module does not verify approved teaching dates, holidays, cancelled classes, or unsaved previews. No database changes.</p>
+      </section>
+    </main>
+
+    <div class="footer">
+        Scheduling System &copy; <?= $dashboardDate->format('Y') ?> Bestlink College of the Philippines
+    </div>
+</div>
+
+<script>
+(()=>{'use strict';
+
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebar = document.getElementById('sidebar');
+if(hamburgerBtn && sidebar) {
+    hamburgerBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
+}
+
+const $=id=>document.getElementById(id);
+let catalog=null,report=null,requestNo=0,timer=null;
+
+const status=(message,bad=false)=>{$('raStatus').textContent=message;$('raStatus').dataset.state=bad?'error':'normal';};
+const formatDate=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');};
+const el=(name,text,cls)=>{const n=document.createElement(name);if(text!==undefined)n.textContent=String(text);if(cls)n.className=cls;return n;};
+
+async function api(params,signal){const url=new URL('room-availability-api.php',location.href);for(const [key,val] of Object.entries(params))url.searchParams.set(key,String(val));const res=await fetch(url,{signal,cache:'no-store',credentials:'same-origin',headers:{Accept:'application/json'}});let data;try{data=await res.json();}catch{throw Error('PHP did not return JSON. Check the Apache error log.');}if(!res.ok||!data.success)throw Error(data.message||data.status||'Room availability query failed.');return data;}
+
+function options(select,items,id,label,first){select.replaceChildren();if(first)select.add(new Option(first.label,first.value));for(const item of items)select.add(new Option(label(item),String(item[id])));}
+
+// FIXED: Removed the LaTeX artifact and restored standard || operator
+function query(){return {action:'check',period_id:$('raPeriod').value,program_id:$('raProgram').value,date:$('raDate').value,start_time:$('raStart').value,end_time:$('raEnd').value,capacity:$('raCapacity').value||'0',room_type:$('raType').value};}
+
+function valid(q){if(!q.period_id||!q.date||!q.start_time||!q.end_time){status('Select academic period, date and both times.',true);return false;}if(q.start_time>=q.end_time||q.start_time<'06:00'||q.end_time>'21:00'){status('Choose a valid interval inside 6:00 AM–9:00 PM.',true);return false;}if(Number(q.capacity)<0||Number(q.capacity)>10000){status('Enter a valid minimum capacity.',true);return false;}return true;}
+
+function issueText(room){const pieces=[...(room.eligibility_notes||[]),...(room.issues||[]).map(i=>i.message)];return [...new Set(pieces)].join(' ');}
+
+function visible(room){const selection=$('raDisplay').value;if(selection==='AVAILABLE'&&room.availability!=='AVAILABLE')return false;if(selection==='OCCUPIED'&&room.availability!=='OCCUPIED')return false;if(selection==='UNAVAILABLE'&&!['UNAVAILABLE','UNCONFIGURED'].includes(room.availability))return false;if(selection==='NOT_ELIGIBLE'&&room.availability!=='NOT_ELIGIBLE')return false;const search=$('raSearch').value.trim().toLowerCase();return !search||[room.room_name,room.building,room.program_code,room.room_type].some(x=>String(x??'').toLowerCase().includes(search));}
+
+function render(){if(!report)return;const rows=report.rooms.filter(visible);$('raCount').textContent=`${rows.length} of ${report.rooms.length} rooms`;$('raRows').replaceChildren();
+if(!rows.length){$('raRows').append(el('p','No rooms match the current filters. Try another time, capacity or program.','ra-empty'));return;}
+for(const r of rows){const card=el('article',undefined,'ra-room');const top=el('div',undefined,'ra-room-head');const meta=el('div');meta.append(el('h3',r.room_name),el('p',[r.building||'Building not set',r.program_code||'Shared room',r.room_type,`${r.capacity} seats`].join(' · ')));top.append(meta,el('span',r.availability.replaceAll('_',' '),'ra-state ra-'+r.availability.toLowerCase()));card.append(top);
+const notes=issueText(r);if(notes)card.append(el('p',notes,'ra-note'));
+if(r.bookings.length){const detail=el('details');const sum=el('summary',`${r.bookings.length} overlapping saved booking(s)`);detail.append(sum);const ul=el('ul');for(const b of r.bookings){ul.append(el('li',`${b.type.replaceAll('_',' ')} #${b.reference_id} · ${b.program_code||'Unknown program'} · ${b.start_time}–${b.end_time}`));}detail.append(ul);card.append(detail);} $('raRows').append(card);}
+}
+
+let controller=null;
+async function check(){const q=query();if(!valid(q)){report=null;$('raPrint').disabled=true;$('raRows').replaceChildren(el('p','Fix the date/time inputs and retry.','ra-empty'));return;}
+const seq=++requestNo;if(controller)controller.abort();controller=new AbortController();status('Checking ACTIVE class, exam, special-class and room records…', false);$('raPrint').disabled=true;
+try{const data=await api(q,controller.signal);if(seq!==requestNo)return;report=data;
+$('raAvailable').textContent=data.summary.available;$('raOccupied').textContent=data.summary.occupied;$('raUnavailable').textContent=data.summary.unavailable+data.summary.unconfigured;$('raNotEligible').textContent=data.summary.not_eligible;
+$('raSubtitle').textContent=`${data.date} · ${data.day_of_week} · ${data.start_time}–${data.end_time} · ${data.period.academic_year}, Semester ${data.period.semester}`;
+status(`Checked ${data.summary.total} rooms. Available: ${data.summary.available}. Not reserved by this search.`);$('raPrint').disabled=false;render();}
+catch(e){if(seq!==requestNo||e.name==='AbortError')return;report=null;status(e.message,true);$('raRows').replaceChildren(el('p',e.message,'ra-empty'));}
+}
+
+function schedule(){clearTimeout(timer);timer=setTimeout(check,220);}
+
+async function init(){try{catalog=await api({action:'catalog'});options($('raPeriod'),catalog.periods,'academic_period_id',x=>`${x.academic_year} · Semester ${x.semester} (${x.period_status})`);options($('raProgram'),catalog.programs,'program_id',x=>`${x.program_code} — ${x.program_name}`,{label:'All programs',value:'0'});$('raDate').value=formatDate();$('raForm').addEventListener('submit',e=>e.preventDefault());for(const id of ['raPeriod','raProgram','raDate','raStart','raEnd','raCapacity','raType']){$(id).addEventListener('input',schedule);$(id).addEventListener('change',schedule);}for(const id of ['raDisplay','raSearch'])$(id).addEventListener('input',render);$('raPrint').addEventListener('click',()=>{if(report)window.print();});check();}catch(e){status(e.message,true);$('raRows').replaceChildren(el('p',e.message,'ra-empty'));}}
+
+init();
+})();
+</script>
+</body>
+</html>

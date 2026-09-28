@@ -1,0 +1,580 @@
+/* ============================================================
+   1. GLOBAL TOPBAR & FOOTER & PAGE SHELL (Strict 52px Topbar)
+   ============================================================ */
+body.bcp-teacher-schedule-page {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background: #f4f6fb;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+}
+.bcp-teacher-schedule-page .main { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    min-width: 0; 
+    margin-left: 210px; 
+    transition: margin-left 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); 
+}
+.bcp-teacher-schedule-page:has(.sidebar.collapsed) .main { margin-left: 0; }
+
+.bcp-teacher-schedule-page .topbar { 
+    height: 52px !important; 
+    min-height: 52px !important;
+    max-height: 52px !important;
+    background: #fff; 
+    display: flex; 
+    align-items: center; 
+    padding: 0 20px; 
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08); 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    box-sizing: border-box;
+}
+.bcp-teacher-schedule-page .hamburger { 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    color: #555; 
+    padding: 0; 
+    width: 36px;
+    height: 36px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    transition: color 160ms ease, background 160ms ease;
+}
+.bcp-teacher-schedule-page .hamburger:hover { color: #1a3a8c; background: #f1f5fb; }
+.bcp-teacher-schedule-page .hamburger:focus-visible,
+.bcp-teacher-schedule-page .avatar:focus-visible {
+    outline: 3px solid #80adff;
+    outline-offset: 2px;
+}
+.bcp-teacher-schedule-page .topbar-spacer { flex: 1; }
+.bcp-teacher-schedule-page .topbar-right { display: flex; align-items: center; gap: 14px; height: 100%; }
+.bcp-teacher-schedule-page .role-badge {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    line-height: 1;
+}
+.bcp-teacher-schedule-page .avatar { 
+    width: 36px; 
+    height: 36px; 
+    background: #1a3a8c; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: #fff; 
+    font-size: 0.9rem; 
+    font-weight: 700; 
+    cursor: pointer; 
+    flex-shrink: 0; 
+    overflow: hidden; 
+    text-decoration: none; 
+    transition: background 180ms ease, transform 180ms ease;
+}
+.bcp-teacher-schedule-page .avatar:hover { background: #1a3a8c; transform: translateY(-1px); }
+.bcp-teacher-schedule-page .footer { 
+    color: #95a0b1;
+    font-size: 11px;
+    padding: 16px clamp(18px, 3vw, 52px) 24px;
+    margin-top: auto;
+    background: transparent;
+    width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .bcp-teacher-schedule-page .main { margin-left: 0 !important; }
+}
+@media (max-width: 600px) { 
+    .bcp-teacher-schedule-page .topbar { padding: 0 12px; } 
+}
+
+/* ============================================================
+   2. TEACHER SCHEDULE VIEW COMPONENT CSS (2026 DESIGN SYSTEM)
+   ============================================================ */
+.bcp-teacher-map {
+    --tm-blue: #1a3a8c;
+    --tm-deep: #102d63;
+    --tm-muted: #68758d;
+    --tm-border: #e5eaf3;
+    --tm-card: #ffffff;
+    
+    box-sizing: border-box;
+    padding: 38px clamp(18px, 3vw, 52px) 40px;
+    color: var(--tm-deep);
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-size: 14px;
+    line-height: 1.45;
+}
+.bcp-teacher-map *, .bcp-teacher-map *::before, .bcp-teacher-map *::after { box-sizing: border-box; }
+
+.bcp-teacher-map__shell { 
+    max-width: 1400px; 
+    width: 100%; 
+    margin: 0 auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 24px; 
+}
+
+#tmResults {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; 
+    width: 100%;
+}
+
+.bcp-teacher-map__header, .bcp-teacher-map__profile, .bcp-teacher-map__sectionhead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.bcp-teacher-map__header { margin-bottom: 0; animation: dashSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.bcp-teacher-map__header h1 {
+    margin: 10px 0 6px;
+    font-size: clamp(28px, 3vw, 39px);
+    line-height: 1.15;
+    letter-spacing: -1.5px;
+    color: #112a54;
+    font-weight: 760;
+}
+.bcp-teacher-map__title-dot { color: #4286df; }
+.bcp-teacher-map__header p { margin: 0; font-size: 13px; color: var(--tm-muted); }
+
+/* STRICT 10px EYEBROW */
+.bcp-teacher-map__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #647b9e;
+    text-transform: uppercase;
+    font-size: 10px !important;
+    letter-spacing: 1.6px;
+    font-weight: 800;
+}
+.bcp-teacher-map__eyebrow-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3ca98c;
+    box-shadow: 0 0 0 4px #e0f7ec;
+}
+
+.bcp-teacher-map__chip {
+    padding: 6px 10px;
+    border: 1px solid #ffffff42;
+    border-radius: 30px;
+    background: #ecf3ff;
+    color: var(--tm-blue);
+    font-size: 10px;
+    font-weight: 780;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.bcp-teacher-map__panel {
+    background: var(--tm-card);
+    border: 1px solid var(--tm-border);
+    border-radius: 18px;
+    box-shadow: 0 6px 20px #29466e04;
+    padding: 24px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0; 
+    animation: dashSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.bcp-teacher-map__panel--filters {
+    position: relative;
+    z-index: 150;
+}
+.bcp-teacher-map__panel h2 {
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    line-height: 1.3;
+    margin: 0;
+    color: #152d52;
+}
+
+.bcp-teacher-map__sectionhead { margin-bottom: 20px; }
+.bcp-teacher-map__sectionhead h2 { margin: 0; }
+
+.bcp-teacher-map__filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px 20px;
+    align-items: flex-end;
+    width: 100%;
+}
+.bcp-teacher-map__filters label {
+    font-size: 11px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 8px;
+    color: #63748e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.bcp-teacher-search-wrapper {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+.bcp-students-search-box {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+.bcp-students-search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ba7ba;
+    font-size: 14px;
+}
+.bcp-teacher-map__filters input {
+    display: block;
+    width: 100%;
+    height: 44px;
+    padding: 0 16px 0 38px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    background: #f9fbff;
+    color: #182e52;
+    border: 1px solid #dae3f0;
+    border-radius: 11px;
+    transition: all 0.2s ease;
+}
+.bcp-teacher-map__filters input:focus {
+    outline: none;
+    background: #fff;
+    border-color: var(--tm-blue);
+    box-shadow: 0 0 0 3px #1a3a8c20;
+}
+
+.bcp-custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    user-select: none;
+}
+.bcp-custom-select-trigger {
+    width: 100%;
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid #dae3f0;
+    border-radius: 11px;
+    background-color: #f9fbff;
+    color: #182e52;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bcp-custom-select-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 12px;
+}
+.bcp-custom-select-arrow {
+    color: #647b9e;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+.bcp-custom-select-trigger.is-active .bcp-custom-select-arrow {
+    transform: rotate(180deg);
+}
+.bcp-custom-select-trigger:hover {
+    border-color: #cbd5e1;
+    background-color: #fff;
+}
+.bcp-custom-select-trigger.is-active {
+    background-color: #fff;
+    border-color: var(--tm-blue);
+    box-shadow: 0 0 0 3px #1a3a8c20;
+}
+.bcp-custom-select-wrapper.is-disabled .bcp-custom-select-trigger {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f4f6fb;
+}
+
+.bcp-custom-select-options {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #dae3f0;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(16, 45, 99, 0.12);
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    max-height: 280px;
+    overflow-y: auto;
+}
+.bcp-custom-select-options.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.bcp-custom-select-option {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #102d63;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f4f7fb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bcp-custom-select-option:last-child { border-bottom: none; }
+.bcp-custom-select-option:hover { background: #f4f7fb; color: #1a3a8c; }
+.bcp-custom-select-option.is-selected { background: #e4f6ee; color: #127657; font-weight: 700; }
+
+.bcp-autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #dae3f0;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(16, 45, 99, 0.12);
+    z-index: 300;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.bcp-autocomplete-item {
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #102d63;
+    cursor: pointer;
+    border-bottom: 1px solid #f4f7fb;
+    transition: background 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bcp-autocomplete-item:last-child { border-bottom: none; }
+.bcp-autocomplete-item:hover { background: #f4f7fb; color: #1a3a8c; font-weight: 600; }
+
+.bcp-teacher-map__status {
+    background: #f8fafc;
+    border: 1px solid var(--tm-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 16px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+.bcp-teacher-map__status[data-state=error] { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+.bcp-teacher-map__status[data-state=success] { background: #e4f6ee; border-color: #b6ffdf; color: #127657; }
+.bcp-teacher-map__status[data-state=loading] { background: #eff6ff; border-color: #bfdbfe; color: var(--tm-blue); }
+
+.bcp-teacher-map__muted { color: var(--tm-muted); font-size: 12px; line-height: 1.6; margin: 0; }
+
+.bcp-teacher-map__profile h2 { font-size: 22px; margin: 0 0 4px; color: #112a54; }
+.bcp-teacher-map__profile p { margin: 0 0 16px; font-weight: 500; font-size: 13px; color: var(--tm-muted); }
+
+.bcp-teacher-map__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+    width: 100%;
+}
+.bcp-teacher-map__stat {
+    padding: 18px 19px;
+    border: 1px solid var(--tm-border);
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 7px 22px #29466e05;
+    min-width: 0;
+}
+.bcp-teacher-map__stat span {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--tm-muted);
+    margin-bottom: 8px;
+}
+.bcp-teacher-map__stat strong {
+    display: block;
+    font-size: clamp(20px, 2vw, 26px);
+    font-weight: 770;
+    line-height: 1.2;
+    color: #172f58;
+    overflow-wrap: anywhere;
+}
+
+.bcp-teacher-map__check {
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.55;
+    background: #f8fafc;
+    border: 1px solid var(--tm-border);
+    color: #334155;
+    width: 100%;
+    margin-top: 16px;
+}
+.bcp-teacher-map__check[data-ok=true] { background: #e4f6ee; border-color: #b6ffdf; color: #127657; }
+.bcp-teacher-map__check[data-ok=false] { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+.bcp-teacher-map__check p { margin: 6px 0 0; font-weight: 500; }
+.bcp-teacher-map__check ul { margin: 10px 0 0; padding-left: 20px; }
+
+.bcp-teacher-map__tablewrap { 
+    overflow-x: auto; 
+    border: 1px solid #e8edf6; 
+    border-radius: 12px; 
+    background: #fff; 
+    width: 100%; 
+    margin-top: 12px; 
+}
+.bcp-teacher-map__table { 
+    border-collapse: collapse; 
+    width: 100%; 
+    min-width: 580px; 
+    text-align: left; 
+    font-size: 12px; 
+}
+.bcp-teacher-map__table th {
+    background: #f9fbff;
+    color: #8090aa;
+    font-size: 10px;
+    font-weight: 780;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8edf6;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.bcp-teacher-map__table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #eff2f6;
+    vertical-align: middle;
+    font-weight: 500;
+    color: #536984;
+}
+.bcp-teacher-map__table tbody tr:last-child td { border-bottom: 0; }
+.bcp-teacher-map__table tbody tr:hover td { background: #fcfdfe; }
+.bcp-teacher-map__table td:nth-child(2) { white-space: nowrap; }
+
+.bcp-teacher-map__split { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 24px; 
+    align-items: start; 
+    width: 100%; 
+    margin-bottom: 24px;
+}
+.bcp-teacher-map__split .bcp-teacher-map__panel { display: block; }
+.bcp-teacher-map__split .bcp-teacher-map__tablewrap {
+    margin-top: 18px; 
+    margin-bottom: 4px; 
+    border: 1px solid #e8edf6;
+    border-radius: 12px;
+}
+.bcp-teacher-map__split .bcp-teacher-map__table { min-width: 100%; }
+
+.bcp-teacher-map__daily { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; width: 100%; margin-top: 12px; }
+.bcp-teacher-map__daytop {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #112a54;
+}
+.bcp-teacher-map__daytop span { color: var(--tm-muted); white-space: nowrap; font-weight: 500; }
+.bcp-teacher-map__track { height: 8px; border-radius: 99px; background: #e8edf6; overflow: hidden; width: 100%; }
+.bcp-teacher-map__fill { height: 100%; border-radius: 99px; background: var(--tm-blue); transition: width 0.3s ease; }
+
+.bcp-teacher-map__empty {
+    text-align: center;
+    padding: 50px 20px;
+    border: 1px dashed #dbe3f0;
+    border-radius: 18px;
+    background: #f9fbff;
+    color: var(--tm-muted);
+    font-size: 13px;
+    font-weight: 500;
+    width: 100%;
+    animation: dashSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.bcp-teacher-map [hidden] { display: none !important; }
+
+@keyframes dashSlideUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1080px) {
+    .bcp-teacher-map__filters, .bcp-teacher-map__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bcp-teacher-map__daily { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1024px) {
+    .bcp-teacher-map__split { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .bcp-teacher-map__filters { grid-template-columns: 1fr; }
+}
+@media (max-width: 650px) {
+    .bcp-teacher-map { padding: 24px 16px; }
+    .bcp-teacher-map__panel { padding: 16px; }
+    .bcp-teacher-map__filters, .bcp-teacher-map__stats, .bcp-teacher-map__daily { grid-template-columns: 1fr; }
+    .bcp-teacher-map__table { min-width: 540px; }
+    .bcp-teacher-map__split .bcp-teacher-map__table { min-width: 100%; }
+    .bcp-teacher-map__header { flex-direction: column; align-items: flex-start; gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bcp-teacher-map *, .bcp-teacher-map *::before, .bcp-teacher-map *::after { transition: none !important; animation: none !important; }
+}
