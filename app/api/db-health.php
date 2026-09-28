@@ -10,18 +10,18 @@ try {
     $pdo = getDatabase();
 
     $stmt = $pdo->query("
-        SELECT
-            DATABASE() AS database_name,
-            CURRENT_USER() AS current_user,
-            @@hostname AS database_host
-    ");
+    SELECT
+        DATABASE() AS database_name,
+        CURRENT_USER() AS authenticated_user,
+        @@hostname AS database_host
+");
 
     $result = $stmt->fetch();
 
     echo json_encode([
         'success' => true,
         'database' => $result['database_name'] ?? null,
-        'current_user' => $result['current_user'] ?? null,
+        'current_user' => $result['authenticated_user'] ?? null,
         'database_host' => $result['database_host'] ?? null,
     ], JSON_PRETTY_PRINT);
 } catch (Throwable $e) {
