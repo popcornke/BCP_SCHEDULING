@@ -2240,7 +2240,9 @@ def solve_schedule(payload):
         MAX_SOLVE_SECONDS
     )
 
-    solver.parameters.num_search_workers = 8
+    solver.parameters.num_search_workers = int(
+    os.getenv("SOLVER_WORKERS", "2")
+)
 
     status = solver.Solve(
         model
