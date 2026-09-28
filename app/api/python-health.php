@@ -1,11 +1,12 @@
-<?php 
+<?php
+
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
-
+require_once __DIR__ . '/../config/python.php';
 // Trailing space removed from the URL
-$pythonUrl = 'http://127.0.0.1:8000/api/health';
+$pythonUrl = pythonBaseUrl() . '/api/health';
 
 if (!function_exists('curl_init')) {
     http_response_code(500);

@@ -1,33 +1,38 @@
-<?php 
+<?php
+
 declare(strict_types=1);
 
-function getDatabase(): PDO { 
+function getDatabase(): PDO
+{
     static $pdo = null;
-    
-    if ($pdo instanceof PDO) { 
-        return $pdo; 
+
+    if ($pdo instanceof PDO) {
+        return $pdo;
     }
-    
-    $host = '127.0.0.1'; 
-    $port = 3306; 
-    $database = 'bcp_scheduling';
-    
-    // Local XAMPP development credentials. 
-    $username = 'root'; 
-    $password = '';
-    
-    $dsn = sprintf( 
-        'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', 
-        $host, 
-        $port, 
-        $database 
+
+    $host = getenv('DB_HOST') ?: '127.0.0.1';
+    $port = (int) (getenv('DB_PORT') ?: 3306);
+    $database = getenv('DB_NAME') ?: 'bcp_scheduling';
+    $username = getenv('DB_USER') ?: (getenv('DB_USERNAME') ?: 'root');
+    $password = getenv('DB_PASS') ?: '';
+
+    $dsn = sprintf(
+        'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
+        $host,
+        $port,
+        $database
     );
-    
-    $pdo = new PDO($dsn, $username, $password, [ 
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false, 
-    ]);
-    
-    return $pdo; 
+
+    $pdo = new PDO(
+        $dsn,
+        $username,
+        $password,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]
+    );
+
+    return $pdo;
 }

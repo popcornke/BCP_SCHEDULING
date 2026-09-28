@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -11,22 +12,28 @@ require_once __DIR__ . '/../config/database.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-final class SaveRejected extends RuntimeException {
+final class SaveRejected extends RuntimeException
+{
     public function __construct(
         public readonly int $httpStatus,
         public readonly string $saveStatus,
         string $message
-    ) { parent::__construct($message); }
+    ) {
+        parent::__construct($message);
+    }
 }
-function rejectSave(int $http, string $status, string $message): never {
+function rejectSave(int $http, string $status, string $message): never
+{
     throw new SaveRejected($http, $status, $message);
 }
-function sendSaveResponse(int $http, array $data): never {
+function sendSaveResponse(int $http, array $data): never
+{
     http_response_code($http);
     echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     exit;
 }
-function localApi(string $url, ?array $body = null): array {
+function localApi(string $url, ?array $body = null): array
+{
     $handle = curl_init($url);
     if ($handle === false) {
         rejectSave(502, 'API_UNAVAILABLE', 'Could not initialize internal API request.');
@@ -57,7 +64,8 @@ function localApi(string $url, ?array $body = null): array {
     }
     return $decoded;
 }
-function minuteOfDay(string $time): int {
+function minuteOfDay(string $time): int
+{
     if (!preg_match('/^(\d{2}):(\d{2})(?::00)?$/', $time, $part)) {
         rejectSave(422, 'INVALID_TIME', 'Invalid timetable clock time.');
     }
@@ -68,7 +76,8 @@ function minuteOfDay(string $time): int {
     }
     return $hours * 60 + $minutes;
 }
-function periodLockName(int $id): string {
+function periodLockName(int $id): string
+{
     return 'BCP_SCHED_SAVE_PERIOD_' . $id;
 }
 
@@ -94,7 +103,8 @@ try {
     ini_set('session.use_strict_mode', '1');
     session_name('BCP_SCHED_DEMO');
     session_set_cookie_params([
-        'httponly' => true, 'samesite' => 'Strict',
+        'httponly' => true,
+        'samesite' => 'Strict',
         'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
         'path' => '/',
     ]);
@@ -118,7 +128,8 @@ try {
     if (($result['success'] ?? false) !== true || ($result['audit']['passed'] ?? false) !== true
         || ($result['status'] ?? '') !== 'DEMO_PREVIEW_GENERATED'
         || ($result['existing_snapshot_constraints_applied'] ?? false) !== true
-        || !is_array($result['assignments'] ?? null)) {
+        || !is_array($result['assignments'] ?? null)
+    ) {
         rejectSave(422, 'UNAPPROVED_PREVIEW', 'The server-side preview was not independently approved.');
     }
     $periodId = (int)$period['academic_period_id'];
@@ -146,24 +157,28 @@ try {
     if (($current['success'] ?? false) !== true || ($current['status'] ?? '') !== 'BASIC_INPUT_READY'
         || ($current['data_origin'] ?? null) !== 'DEMO'
         || (int)($current['program']['program_id'] ?? -1) !== $programId
-        || (int)($current['academic_period']['academic_period_id'] ?? -1) !== $periodId) {
+        || (int)($current['academic_period']['academic_period_id'] ?? -1) !== $periodId
+    ) {
         rejectSave(409, 'INPUTS_NOT_READY', 'Current database inputs are not ready for this preview.');
     }
     $freshInput = $current['scheduling_input'];
     $freshHash = hash('sha256', json_encode(
-        $freshInput, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR
+        $freshInput,
+        JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR
     ));
     if (!hash_equals((string)$preview['input_hash'], $freshHash)) {
         rejectSave(409, 'STALE_PREVIEW', 'Scheduling inputs or existing saved timetables changed. Generate a new preview.');
     }
 
     // The independent checker is run again on fresh DB facts, not on browser-submitted assignments.
-    $audit = localApi('http://127.0.0.1:8000/api/schedules/audit', [
-        'input' => $current, 'result' => $result,
+    $audit = localApi(pythonBaseUrl() . '/api/schedules/audit', [
+        'input' => $current,
+        'result' => $result,
     ]);
     if (($audit['passed'] ?? false) !== true || ($audit['status'] ?? '') !== 'AUDIT_PASSED'
         || (int)($audit['required_meetings'] ?? -1) !== (int)$result['required_meetings']
-        || (int)($audit['returned_meetings'] ?? -1) !== count($result['assignments'])) {
+        || (int)($audit['returned_meetings'] ?? -1) !== count($result['assignments'])
+    ) {
         error_log('BCP save rejected by independent audit: ' . json_encode($audit['errors'] ?? []));
         rejectSave(422, 'FINAL_AUDIT_FAILED', 'Final independent conflict audit failed. No schedule saved.');
     }
@@ -234,12 +249,17 @@ try {
             if ($start >= $oldEnd || $oldStart >= $end) {
                 continue;
             }
-            if ($teacherId === (int)$old['teacher_id']
+            if (
+                $teacherId === (int)$old['teacher_id']
                 || $sectionId === (int)$old['section_id']
                 || $subjectId === (int)$old['subject_id']
-                || ($roomId !== null && $old['room_id'] !== null && $roomId === (int)$old['room_id'])) {
-                rejectSave(409, 'SAVED_SCHEDULE_CONFLICT',
-                    'Meeting overlaps a saved teacher, section, subject, or room assignment. Regenerate.');
+                || ($roomId !== null && $old['room_id'] !== null && $roomId === (int)$old['room_id'])
+            ) {
+                rejectSave(
+                    409,
+                    'SAVED_SCHEDULE_CONFLICT',
+                    'Meeting overlaps a saved teacher, section, subject, or room assignment. Regenerate.'
+                );
             }
         }
         $prepared[] = [
@@ -290,8 +310,10 @@ try {
     }
     $responseStatus = 200;
     $responsePayload = [
-        'success' => true, 'status' => 'DEMO_SCHEDULE_SAVED',
-        'batch_id' => $batchId, 'program' => 'BSIT',
+        'success' => true,
+        'status' => 'DEMO_SCHEDULE_SAVED',
+        'batch_id' => $batchId,
+        'program' => 'BSIT',
         'academic_period_id' => $periodId,
         'saved_meetings' => count($prepared),
         'database_write' => true,
@@ -301,14 +323,17 @@ try {
 } catch (SaveRejected $error) {
     $responseStatus = $error->httpStatus;
     $responsePayload = [
-        'success' => false, 'status' => $error->saveStatus,
-        'message' => $error->getMessage(), 'database_write' => $committed,
+        'success' => false,
+        'status' => $error->saveStatus,
+        'message' => $error->getMessage(),
+        'database_write' => $committed,
     ];
 } catch (Throwable $error) {
     error_log('BCP Phase 4C save failed: ' . $error->getMessage());
     $responseStatus = 500;
     $responsePayload = [
-        'success' => false, 'status' => 'SAVE_FAILED',
+        'success' => false,
+        'status' => 'SAVE_FAILED',
         'message' => $committed
             ? 'Timetable was saved, but post-save processing failed. Check the saved batch before retrying.'
             : 'Save failed. No timetable was committed. Check server logs.',
@@ -318,13 +343,19 @@ try {
 // Release resources BEFORE replying; all error paths must roll back.
 if ($pdo instanceof PDO) {
     if ($pdo->inTransaction()) {
-        try { $pdo->rollBack(); } catch (Throwable $cleanupError) { error_log($cleanupError->getMessage()); }
+        try {
+            $pdo->rollBack();
+        } catch (Throwable $cleanupError) {
+            error_log($cleanupError->getMessage());
+        }
     }
     if ($locked) {
         try {
             $release = $pdo->prepare('SELECT RELEASE_LOCK(:name)');
             $release->execute(['name' => $lockName]);
-        } catch (Throwable $cleanupError) { error_log($cleanupError->getMessage()); }
+        } catch (Throwable $cleanupError) {
+            error_log($cleanupError->getMessage());
+        }
     }
 }
 sendSaveResponse($responseStatus, $responsePayload);

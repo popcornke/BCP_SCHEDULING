@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/app/shared/auth.php';
@@ -20,6 +21,6 @@ if (!authCsrfValid($_POST['csrf_token'] ?? null)) {
 authClear();
 
 header('Clear-Site-Data: "cache"');
-header('Location: /BCP_SCHEDULING/index.php', true, 303);
+header('Location: /index.php', true, 303);
 
 exit;

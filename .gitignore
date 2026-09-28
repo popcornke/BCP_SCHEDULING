@@ -1,0 +1,36 @@
+# ==========================================
+# Python
+# ==========================================
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Python virtual environment
+python-backend/.venv/
+.venv/
+venv/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.bak-*
+
+# Database dumps
+*.sql.gz
+*.dump

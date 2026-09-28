@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /*
@@ -6,7 +7,7 @@ declare(strict_types=1);
  * Central session and access protection.
  */
 
-const LOGIN_URL = '/BCP_SCHEDULING/index.php';
+const LOGIN_URL = '/index.php';
 const SESSION_IDLE_LIMIT = 1800;    // 30 minutes
 const SESSION_MAX_LIFETIME = 28800; // 8 hours
 
@@ -18,16 +19,23 @@ function authDb(): PDO
         return $pdo;
     }
 
-    // Local XAMPP defaults.
-    // Configure BCP_DB_USER and BCP_DB_PASS
-    // for your actual database account.
-    $user = getenv('BCP_DB_USER');
-    $pass = getenv('BCP_DB_PASS');
+    $host = getenv('DB_HOST') ?: '127.0.0.1';
+    $port = (int) (getenv('DB_PORT') ?: 3306);
+    $database = getenv('DB_NAME') ?: 'bcp_scheduling';
+    $user = getenv('DB_USER') ?: 'root';
+    $pass = getenv('DB_PASS') ?: '';
+
+    $dsn = sprintf(
+        'mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4',
+        $host,
+        $port,
+        $database
+    );
 
     $pdo = new PDO(
-        'mysql:host=127.0.0.1;dbname=bcp_scheduling;charset=utf8mb4',
-        $user !== false ? $user : 'root',
-        $pass !== false ? $pass : '',
+        $dsn,
+        $user,
+        $pass,
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -56,7 +64,7 @@ function authStart(): void
 
     session_set_cookie_params([
         'lifetime' => 0,
-        'path' => '/BCP_SCHEDULING/',
+        'path' => '/',
         'secure' => $https,
         'httponly' => true,
         'samesite' => 'Lax'

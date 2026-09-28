@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/app/shared/auth.php';
@@ -7,7 +8,7 @@ authStart();
 authNoCache();
 
 
-$dashboard = '/BCP_SCHEDULING/app/dashboard/dashboard.php';
+$dashboard = '/app/dashboard/dashboard.php';
 
 
 if (authLoggedIn()) {
@@ -93,7 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Generic response prevents account enumeration.
                 $error = 'Invalid username or password, or account temporarily locked.';
-
             } else {
 
                 $reset = $db->prepare(
@@ -123,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: ' . $dashboard, true, 303);
                 exit;
             }
-
         } catch (Throwable $e) {
             error_log('BCP login error: ' . $e->getMessage());
             $error = 'Login service is temporarily unavailable.';
@@ -144,6 +143,7 @@ function loginEscape(string $text): string
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -152,129 +152,128 @@ function loginEscape(string $text): string
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- External CSS link mapping to your assets folder -->
-    <link rel="stylesheet" href="app\assets\css\login.css">
+    <link rel="stylesheet" href="/app/assets/css/login.css">
 </head>
 
 <body class="bcp-login-page">
 
-<main class="bcp-login">
+    <main class="bcp-login">
 
-    <section class="login-intro">
+        <section class="login-intro">
 
-        <div class="brand">
-            <div class="brand-icon">BCP</div>
+            <div class="brand">
+                <div class="brand-icon">BCP</div>
 
-            <div>
-                <strong>BESTLINK COLLEGE</strong>
-                <span>OF THE PHILIPPINES</span>
+                <div>
+                    <strong>BESTLINK COLLEGE</strong>
+                    <span>OF THE PHILIPPINES</span>
+                </div>
             </div>
-        </div>
 
-        <div class="intro-content">
+            <div class="intro-content">
 
-            <span class="intro-badge">
-                ACADEMIC SCHEDULING PLATFORM
-            </span>
-
-            <h1>
-                A smarter way to<br>
-                manage academic<br>
-                <span>schedules.</span>
-            </h1>
-
-            <p>
-                Manage class schedules, faculty assignments,
-                examinations, and classroom availability
-                in one place.
-            </p>
-
-        </div>
-
-        <div class="intro-footer">
-            BCP Class Scheduling System
-        </div>
-
-    </section>
-
-    <section class="login-form-area">
-
-        <div class="login-card">
-
-            <div class="login-card-header">
-
-                <span class="welcome-label">
-                    WELCOME BACK
+                <span class="intro-badge">
+                    ACADEMIC SCHEDULING PLATFORM
                 </span>
 
-                <h2>Sign in to your account</h2>
+                <h1>
+                    A smarter way to<br>
+                    manage academic<br>
+                    <span>schedules.</span>
+                </h1>
 
                 <p>
-                    Enter your account credentials
-                    to continue.
+                    Manage class schedules, faculty assignments,
+                    examinations, and classroom availability
+                    in one place.
                 </p>
 
             </div>
 
-            <?php if ($error !== ''): ?>
+            <div class="intro-footer">
+                BCP Class Scheduling System
+            </div>
 
-                <div class="login-error" role="alert">
-                    <?= loginEscape($error) ?>
+        </section>
+
+        <section class="login-form-area">
+
+            <div class="login-card">
+
+                <div class="login-card-header">
+
+                    <span class="welcome-label">
+                        WELCOME BACK
+                    </span>
+
+                    <h2>Sign in to your account</h2>
+
+                    <p>
+                        Enter your account credentials
+                        to continue.
+                    </p>
+
                 </div>
 
-            <?php endif; ?>
+                <?php if ($error !== ''): ?>
 
-            <form method="POST" action="" autocomplete="on">
+                    <div class="login-error" role="alert">
+                        <?= loginEscape($error) ?>
+                    </div>
 
-                <input type="hidden" name="csrf_token" value="<?= loginEscape($csrf) ?>">
+                <?php endif; ?>
 
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        placeholder="Enter your username"
-                        autocomplete="username"
-                        maxlength="80"
-                        required
-                        autofocus
-                    >
-                </div>
+                <form method="POST" action="" autocomplete="on">
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        placeholder="Enter your password"
-                        autocomplete="current-password"
-                        required
-                    >
-                </div>
+                    <input type="hidden" name="csrf_token" value="<?= loginEscape($csrf) ?>">
 
-                <button class="login-button" type="submit">
-                    Sign In
-                    <span aria-hidden="true">→</span>
-                </button>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Enter your username"
+                            autocomplete="username"
+                            maxlength="80"
+                            required
+                            autofocus>
+                    </div>
 
-            </form>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required>
+                    </div>
 
-            <p class="login-support">
-                Authorized Admin and Scheduler access only.
-            </p>
+                    <button class="login-button" type="submit">
+                        Sign In
+                        <span aria-hidden="true">→</span>
+                    </button>
 
-        </div>
+                </form>
 
-        <div class="login-bottom">
-            &copy; <?= date('Y') ?> Bestlink College of the Philippines
-        </div>
+                <p class="login-support">
+                    Authorized Admin and Scheduler access only.
+                </p>
 
-    </section>
+            </div>
 
-</main>
+            <div class="login-bottom">
+                &copy; <?= date('Y') ?> Bestlink College of the Philippines
+            </div>
+
+        </section>
+
+    </main>
 
 </body>
+
 </html>
