@@ -734,44 +734,154 @@ $dashboardDate = new DateTimeImmutable('now', new DateTimeZone('Asia/Manila'));
 
                     let result = null;
 
-                    // Poll without holding one long HTTP request.
-                    while (true) {
+        // Poll the background solver job.
+        //
+        // HostForge may occasionally return a temporary
+        // 502/503/504 while the long-running Python solver
+        // is still healthy. A transient gateway response
+        // must not cancel the scheduling job.
 
-                        await new Promise(
-                            resolve =>
-                            setTimeout(
-                                resolve,
-                                2000
-                            )
-                        );
+        let transientFailures = 0;
 
-                        const status =
-                            await getJson(
-                                `../api/generate-status.php?job_id=${encodeURIComponent(
+        const maxTransientFailures = 12;
+
+        while (true) {
+
+            await new Promise(
+                resolve => setTimeout(
+                    resolve,
+                    5000
+                )
+            );
+
+            let response;
+
+            try {
+
+                response = await fetch(
+                    `../api/generate-status.php?job_id=${encodeURIComponent(
                         jobId
-                    )}`
-                            );
-
-                        if (
-                            status.status ===
-                            "SCHEDULE_JOB_RUNNING"
-                        ) {
-
-                            setStatus(
-                                status.job_status ===
-                                "QUEUED" ?
-                                "Scheduling job is queued…" :
-                                "OR-Tools is optimizing the timetable…",
-                                "loading"
-                            );
-
-                            continue;
+                    )}`,
+                    {
+                        cache: "no-store",
+                        credentials: "same-origin",
+                        headers: {
+                            "Accept": "application/json"
                         }
-
-                        result = status;
-
-                        break;
                     }
+                );
+
+            } catch (error) {
+
+                transientFailures++;
+
+                if (
+                    transientFailures >
+                    maxTransientFailures
+                ) {
+                    throw new Error(
+                        "Unable to reach the scheduling status service after repeated retries."
+                    );
+                }
+
+                setStatus(
+                    "The scheduler is still running. Reconnecting to the status service…",
+                    "loading"
+                );
+
+                continue;
+            }
+
+            // Temporary infrastructure/gateway error.
+            //
+            // Do not abort the Python job.
+            if (
+                response.status === 502 ||
+                response.status === 503 ||
+                response.status === 504
+            ) {
+
+                transientFailures++;
+
+                if (
+                    transientFailures >
+                    maxTransientFailures
+                ) {
+                    throw new Error(
+                        "The scheduling status service remained unavailable after repeated retries."
+                    );
+                }
+
+                setStatus(
+                    "OR-Tools is still optimizing. Waiting for the server to become available…",
+                    "loading"
+                );
+
+                continue;
+            }
+
+            let status;
+
+            try {
+
+                status = await response.json();
+
+            } catch {
+
+                transientFailures++;
+
+                if (
+                    transientFailures >
+                    maxTransientFailures
+                ) {
+                    throw new Error(
+                        "The scheduling status service repeatedly returned an invalid response."
+                    );
+                }
+
+                setStatus(
+                    "OR-Tools is still optimizing. Reconnecting…",
+                    "loading"
+                );
+
+                continue;
+            }
+
+            if (
+                !response.ok ||
+                status.success !== true
+            ) {
+
+                throw new Error(
+                    status.message ||
+                    status.status ||
+                    "The scheduling status request failed."
+                );
+            }
+
+            // Successful status request resets the
+            // consecutive transient-failure counter.
+            transientFailures = 0;
+
+            if (
+                status.status ===
+                "SCHEDULE_JOB_RUNNING"
+            ) {
+
+                setStatus(
+                    status.job_status === "QUEUED"
+                        ? "Scheduling job is queued…"
+                        : "OR-Tools is optimizing the timetable…",
+                    "loading"
+                );
+
+                continue;
+            }
+
+            result = status;
+
+            break;
+        }
 
                     if (
                         result.status !==
