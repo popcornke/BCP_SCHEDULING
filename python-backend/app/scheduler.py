@@ -837,14 +837,6 @@ def solve_schedule(payload):
 
             ).OnlyEnforceIf(selected)
 
-            model.Add(
-
-                room_var != room_id
-
-            ).OnlyEnforceIf(
-                selected.Not()
-            )
-
             section_room_choices[
                 section_id
             ][room_id] = selected
@@ -1136,14 +1128,6 @@ def solve_schedule(payload):
 
             ).OnlyEnforceIf(selected)
 
-            model.Add(
-
-                teacher_var != teacher_id
-
-            ).OnlyEnforceIf(
-                selected.Not()
-            )
-
             # The selected teacher must be
             # available for the whole meeting.
 
@@ -1158,6 +1142,25 @@ def solve_schedule(payload):
                 ],
 
             ).OnlyEnforceIf(selected)
+
+            optional_teacher_interval = (
+
+                model.NewOptionalIntervalVar(
+
+                    start,
+
+                    duration,
+
+                    end,
+
+                    selected,
+
+                    f"teacher_{teacher_id}"
+                    f"_meeting_{index}",
+
+                )
+
+            )
 
             optional_teacher_interval = (
 
@@ -1198,9 +1201,15 @@ def solve_schedule(payload):
             # 10.1 DAILY TEACHER WORKLOAD
             # ====================================
 
-            for day_index in range(
-                len(DAYS)
-            ):
+            eligible_days = sorted({
+
+                value // SLOTS_PER_DAY
+
+                for value in eligible_starts
+
+            })
+
+            for day_index in eligible_days:
 
                 on_day = model.NewBoolVar(
 
@@ -1233,11 +1242,6 @@ def solve_schedule(payload):
                     f"_selected_day_{day_index}",
 
                 )
-
-                # selected_on_day is true
-                # exactly when the teacher is
-                # selected and the meeting
-                # occurs on this day.
 
                 model.Add(
 
@@ -2240,8 +2244,17 @@ def solve_schedule(payload):
     )
 
     solver.parameters.num_search_workers = int(
-    os.getenv("SOLVER_WORKERS", "2")
-)
+        os.getenv("SOLVER_WORKERS", "2")
+    )
+
+    # Diagnostic / presolve configuration.
+    #
+    # These settings do NOT relax any scheduling rule.
+    # They only help CP-SAT simplify and diagnose
+    # the model before and during search.
+    solver.parameters.log_search_progress = True
+    solver.parameters.cp_model_presolve = True
+    solver.parameters.symmetry_level = 2
 
     status = solver.Solve(
         model
@@ -2309,6 +2322,10 @@ def solve_schedule(payload):
 
             solve_seconds=solver.WallTime(),
 
+            solver_branches=solver.NumBranches(),
+
+            solver_conflicts=solver.NumConflicts(),
+
             required_meetings=len(meetings),
 
             returned_meetings=0,
@@ -2316,6 +2333,7 @@ def solve_schedule(payload):
             school_wide_validation_complete=False,
 
         )
+        
 
     # ========================================
     # 19. EXTRACT GENERATED ASSIGNMENTS
@@ -2484,6 +2502,12 @@ def solve_schedule(payload):
 
         "solve_seconds":
             solver.WallTime(),
+
+        "solver_branches":
+            solver.NumBranches(),
+
+        "solver_conflicts":
+            solver.NumConflicts(),
 
         "sections":
             len(sections),
