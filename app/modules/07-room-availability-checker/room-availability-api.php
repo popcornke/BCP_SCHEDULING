@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /** BCP Module 7: DEMO, read-only, as-recorded room availability on a selected date/time. */
 require_once __DIR__ . '/../../config/database.php';
 date_default_timezone_set('Asia/Manila');
@@ -103,7 +106,6 @@ function rcAssess(array $rooms, array $availability, array $slots, array $classe
     return ['summary'=>$summary,'rooms'=>$result,'time_slot_covered'=>$timeEligible];
 }
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) rcFail(403,'LOCAL_DEMO_ONLY','This DEMO module is available on localhost only.');
     if (($_SERVER['REQUEST_METHOD']??'')!=='GET') rcFail(405,'METHOD_NOT_ALLOWED','GET only.');
     $action=(string)($_GET['action']??'catalog');
     if (!in_array($action,['catalog','check'],true)) rcFail(400,'INVALID_ACTION','Use action=catalog or action=check.');

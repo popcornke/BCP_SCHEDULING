@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /** Module 6 / Phase 6B. DEMO-only, localhost-only, read-only request preparation. No DB writes. */
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/special-class-calendar.php';
@@ -141,9 +144,6 @@ function prepParticipants(PDO $pdo, int $periodId, int $programId, array $reques
     return $rows;
 }
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) {
-        prepFail(403,'LOCAL_DEMO_ONLY','The preparation tool is available only from localhost.');
-    }
     $method=$_SERVER['REQUEST_METHOD']??'GET';
     if (!in_array($method,['GET','POST'],true)) prepFail(405,'METHOD_NOT_ALLOWED','GET/POST only.');
     $data=$method==='POST'?json_decode(file_get_contents('php://input'),true,64,JSON_THROW_ON_ERROR):$_GET;

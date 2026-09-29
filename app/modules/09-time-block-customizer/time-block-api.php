@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /** BCP Module 9 / Phase 9A. Local read-only inventory; never changes time_slots or saved schedules. */
 require_once __DIR__ . '/../../config/database.php';
 header('Content-Type: application/json; charset=utf-8');
@@ -14,10 +17,6 @@ function tbReply(int $http, array $data): never {
 }
 
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)) {
-        tbReply(403, ['success' => false, 'status' => 'LOCAL_DEMO_ONLY',
-            'message' => 'This read-only DEMO inventory is available only from localhost.']);
-    }
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
         tbReply(405, ['success' => false, 'status' => 'METHOD_NOT_ALLOWED', 'message' => 'GET only.']);
     }

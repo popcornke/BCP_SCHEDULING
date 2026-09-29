@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /** Module 10 / Phase 10A: LOCAL DEMO read-only saved calendar. No booking or scheduler calls. */
 require_once __DIR__ . '/../../config/database.php';
 date_default_timezone_set('Asia/Manila');
@@ -235,9 +238,6 @@ function ciBuildEvents(PDO $db, int $periodId, int $programId, int $teacherId,
 }
 
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR']??'', ['127.0.0.1','::1'],true)) {
-        ciFail(403,'LOCAL_DEMO_ONLY','Module 10 DEMO is accessible only on localhost.');
-    }
     if (($_SERVER['REQUEST_METHOD']??'GET')!=='GET') {
         ciFail(405,'METHOD_NOT_ALLOWED','GET only.');
     }

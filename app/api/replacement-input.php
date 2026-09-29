@@ -6,6 +6,8 @@ declare(strict_types=1);
  * protection against a second ACTIVE batch.
  * Never writes to MySQL; never enables replacement saving.
  */
+require_once dirname(__DIR__) . '/shared/auth.php';
+authRequire(true);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
@@ -21,9 +23,6 @@ function replacementInputFail(int $http, string $status, string $message): never
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
     replacementInputFail(405, 'GET_ONLY', 'Read-only GET endpoint.');
-}
-if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)) {
-    replacementInputFail(403, 'LOCAL_DEMO_ONLY', 'Demo replacement preview is local-only.');
 }
 if (strtoupper(trim((string)($_GET['program'] ?? ''))) !== 'BSIT') {
     replacementInputFail(403, 'BSIT_DEMO_ONLY', 'BSIT DEMO only.');

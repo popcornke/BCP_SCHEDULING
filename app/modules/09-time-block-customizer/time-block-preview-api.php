@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /** Module 9 Phase 9B. Purely read-only DB-wide time-slot impact analysis; NO SAVE ROUTE. */
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/time-block-preview-lib.php';
@@ -18,9 +21,6 @@ function tb9bRows(PDO $db,string $sql,array $params=[]): array {
     return $statement->fetchAll(PDO::FETCH_ASSOC);
 }
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) {
-        tb9bFail(403,'LOCAL_DEMO_ONLY','This read-only DEMO preview is accessible only on localhost.');
-    }
     if (($_SERVER['REQUEST_METHOD']??'')!=='POST') {
         tb9bFail(405,'METHOD_NOT_ALLOWED','Use POST with JSON to preview; database saving is unavailable.');
     }

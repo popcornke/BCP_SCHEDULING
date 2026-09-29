@@ -5,6 +5,10 @@ declare(strict_types=1);
  * Never saves, updates, supersedes or deletes ANY database record.
  * The existing generate.php and save-schedule.php remain unchanged.
  */
+require_once dirname(__DIR__) . '/shared/auth.php';
+authRequire(true);
+
+require_once __DIR__ . '/../config/python.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 set_time_limit(190);
@@ -47,9 +51,6 @@ function replacementPreviewHttp(string $url, ?array $body, int $seconds): array
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
     replacementPreviewFail(405, 'GET_ONLY', 'Preview endpoint accepts GET only.');
 }
-if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)) {
-    replacementPreviewFail(403, 'LOCAL_DEMO_ONLY', 'Demo replacement preview is local-only.');
-}
 if (!function_exists('curl_init')) {
     replacementPreviewFail(500, 'CURL_UNAVAILABLE', 'PHP cURL is required.');
 }
@@ -67,9 +68,16 @@ try {
         'program' => $program, 'academic_year' => $year,
         'semester' => $semester, 'batch_id' => $batchId,
     ]);
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        ? 'https'
+        : 'http';
+
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+
     [$inputStatus, $input] = replacementPreviewHttp(
-        'http://127.0.0.1/BCP_SCHEDULING/app/api/replacement-input.php?' . $query,
-        null, 35
+        $scheme . '://' . $host . '/app/api/replacement-input.php?' . $query,
+        null,
+        35
     );
     if ($inputStatus !== 200 || ($input['success'] ?? false) !== true
         || ($input['status'] ?? '') !== 'BASIC_INPUT_READY'
@@ -79,7 +87,9 @@ try {
             (string)($input['message'] ?? 'The selected ACTIVE batch or scheduling inputs are not ready.'));
     }
     [$pythonStatus, $result] = replacementPreviewHttp(
-        'http://127.0.0.1:8000/api/schedules/preview', $input, 155
+        pythonBaseUrl() . '/api/schedules/preview',
+        $input,
+        155
     );
     if ($pythonStatus !== 200 || ($result['success'] ?? false) !== true
         || ($result['status'] ?? '') !== 'DEMO_PREVIEW_GENERATED'

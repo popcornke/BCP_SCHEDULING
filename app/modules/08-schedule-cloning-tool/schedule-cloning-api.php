@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/shared/auth.php';
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
 
-authRequire();
+authRequire(true);
 /**
  * BCP Module 8, Phase 8A: read-only source/target readiness checker.
  * Never creates periods, sections, batch records, or schedule meetings.
@@ -173,9 +173,6 @@ function ccAssessment(PDO $db, array $catalog, int $sourceId, int $targetPeriodI
         'notice'=>'Read-only mapping inventory. No cloning, timetable validation or saving is performed.'];
 }
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) {
-        ccFail(403,'LOCAL_DEMO_ONLY','This read-only DEMO checker can be accessed only from localhost.');
-    }
     if (($_SERVER['REQUEST_METHOD']??'GET')!=='GET') ccFail(405,'METHOD_NOT_ALLOWED','GET only.');
     $action=(string)($_GET['action']??'catalog');
     if (!in_array($action,['catalog','assess'],true)) ccFail(400,'INVALID_ACTION','Use action=catalog or action=assess.');

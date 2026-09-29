@@ -125,7 +125,7 @@ SQL);
         rgReject(409, 'STALE_SAVED_SCHEDULE', 'Locked saved schedule records differ from the audited snapshot.');
     }
     // Re-run the independent Python audit AGAINST CURRENT DB INPUTS; never trust browser assignments.
-    [$auditHttp, $audit] = rgCall('http://127.0.0.1:8000/api/schedules/audit', [
+    [$auditHttp, $audit] = rgCall(pythonBaseUrl() . '/api/schedules/audit', [
         'input' => $fresh, 'result' => $result,
     ]);
     if ($auditHttp !== 200 || ($audit['passed'] ?? false) !== true

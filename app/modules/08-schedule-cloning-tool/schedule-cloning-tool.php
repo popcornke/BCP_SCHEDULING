@@ -7,10 +7,6 @@ authRequire();
 
 
 /** BCP Module 8 Phase 8A. Read-only inventory, no timetable generation or save. */
-if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) {
-    http_response_code(403);
-    exit('Module 8 DEMO is available only from localhost.');
-}
 
 
 $APP_ROOT = '../../';

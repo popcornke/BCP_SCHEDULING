@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 /** Phase 4G shared helpers. Local-only DEMO integration, NOT production authorization. */
+require_once dirname(__DIR__) . '/shared/auth.php';
+authRequire(true);
+
+require_once __DIR__ . '/../config/python.php';
 require_once __DIR__ . '/../config/database.php';
 
 final class ReplacementRejected extends RuntimeException {
@@ -21,9 +25,6 @@ function rgRespond(int $http, array $response): never {
 function rgGuard(string $method): void {
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== $method) {
         rgReject(405, 'WRONG_METHOD', "Only {$method} is allowed.");
-    }
-    if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)) {
-        rgReject(403, 'LOCAL_DEMO_ONLY', 'DEMO replacement is only available on localhost.');
     }
     if (!function_exists('curl_init')) {
         rgReject(500, 'CURL_UNAVAILABLE', 'PHP cURL is required.');
@@ -78,10 +79,22 @@ function rgCall(string $url, ?array $post = null, int $timeout = 35): array {
     if (!is_array($data)) { rgReject(502, 'BAD_API_RESPONSE', 'Internal API returned an invalid object.'); }
     return [$status, $data];
 }
-function rgInputUrl(int $batch, string $year, int $semester): string {
-    return 'http://127.0.0.1/BCP_SCHEDULING/app/api/replacement-input.php?' . http_build_query([
-        'program' => 'BSIT', 'academic_year' => $year, 'semester' => $semester, 'batch_id' => $batch,
-    ]);
+function rgInputUrl(int $batch, string $year, int $semester): string
+{
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        ? 'https'
+        : 'http';
+
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+
+    return $scheme . '://' . $host
+        . '/app/api/replacement-input.php?'
+        . http_build_query([
+            'program' => 'BSIT',
+            'academic_year' => $year,
+            'semester' => $semester,
+            'batch_id' => $batch,
+        ]);
 }
 function rgVerifyInput(array $input, int $batchId, int $periodId, int $programId): void {
     if (($input['success'] ?? false) !== true || ($input['status'] ?? '') !== 'BASIC_INPUT_READY'

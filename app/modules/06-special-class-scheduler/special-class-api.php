@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /** Module 6 Phase 6A: read-only catalog and candidate weekly date expansion. NO save path. */
 require_once __DIR__ . '/../../config/database.php';
 date_default_timezone_set('Asia/Manila');
@@ -15,7 +18,6 @@ function scRows(PDO $db, string $query, array $params=[]): array {
     $st=$db->prepare($query); $st->execute($params); return $st->fetchAll(PDO::FETCH_ASSOC);
 }
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1','::1'], true)) scReply(403,['success'=>false,'status'=>'LOCAL_DEMO_ONLY']);
     if (($_SERVER['REQUEST_METHOD']??'GET') !== 'GET') scReply(405,['success'=>false,'status'=>'READ_ONLY_PHASE']);
     $db=getDatabase(); $db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
     $period=(int)($_GET['period_id']??1);

@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /** Module 5: local DEMO only. The faculty group owns faculty profiles/leave approvals. */
 require_once __DIR__ . '/../../config/database.php';
 
@@ -22,9 +25,6 @@ final class SubstituteError extends RuntimeException {
     }
 }
 function subGuard(string $method): void {
-    if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)) {
-        subFail(403, 'LOCAL_DEMO_ONLY', 'The demo tracker is available only on localhost.');
-    }
     if (($_SERVER['REQUEST_METHOD'] ?? '') !== $method) {
         subFail(405, 'METHOD_NOT_ALLOWED', 'Use the required HTTP method.');
     }

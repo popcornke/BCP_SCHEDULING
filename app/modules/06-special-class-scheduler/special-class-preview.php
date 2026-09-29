@@ -1,5 +1,9 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../../config/python.php';
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire(true);
 /**
  * Module 6 Phase 6D. Server-side policy gate + read-only weekly preview.
  * Requires verified institutional evidence stored by an authorized DB operator;
@@ -159,7 +163,6 @@ function sc6dSnapshot(PDO $db, array $body, array $context, array $policy, array
     ];
 }
 try {
-    if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) sc6dFail(403,'LOCAL_DEMO_ONLY','Phase 6D demo is available only from localhost.');
     $method=$_SERVER['REQUEST_METHOD']??'GET';
     if (!in_array($method,['GET','POST'],true)) sc6dFail(405,'METHOD_NOT_ALLOWED','GET or POST only.');
     $data=$method==='POST'?json_decode(file_get_contents('php://input'),true,64,JSON_THROW_ON_ERROR):$_GET;
@@ -202,7 +205,7 @@ try {
     if (!is_string($key) || strlen($key)<32) sc6dFail(503,'INTERNAL_SOLVER_NOT_CONFIGURED','Configure the private PHP-to-Python scheduler key before generating previews.');
     $snapshot=sc6dSnapshot($db,$data,$context,$policy,$dates);
     if (!function_exists('curl_init')) sc6dFail(503,'CURL_UNAVAILABLE','PHP cURL is required for the Python preview service.');
-    $curl=curl_init('http://127.0.0.1:8000/api/special-classes/preview');
+    $curl=curl_init(pythonBaseUrl() . '/api/special-classes/preview');
     curl_setopt_array($curl,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>4,
         CURLOPT_TIMEOUT=>45,CURLOPT_HTTPHEADER=>['Accept: application/json','Content-Type: application/json','X-BCP-Internal-Key: '.$key],
         CURLOPT_POSTFIELDS=>json_encode($snapshot,JSON_THROW_ON_ERROR)]);

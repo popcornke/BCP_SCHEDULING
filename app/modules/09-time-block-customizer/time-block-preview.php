@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
+
+require_once dirname(__DIR__, 2) . '/shared/auth.php';
+authRequire();
 /** Module 9 Phase 9B. Read-only visual time block preview; original Phase 9A UI remains unchanged. */
-if (!in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true)) {
-    http_response_code(403); exit('This DEMO preview is accessible only on localhost.');
-}
 ?>
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

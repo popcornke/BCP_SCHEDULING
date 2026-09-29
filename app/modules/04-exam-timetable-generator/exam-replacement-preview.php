@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../../config/python.php';
 /** Module 4 DEMO: audited proposed exam replacement, NO writes to MySQL. */
 require_once __DIR__ . '/exam-common.php';
 try {
@@ -20,7 +21,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
     $snapshot=exBuildInput($pdo,(int)$periodId,$body['exam_dates'],$window,(int)$oldId,$programCode);
     if (!function_exists('curl_init')) exFail(500,'CURL_UNAVAILABLE','Enable PHP cURL for the Python exam optimizer.');
-    $curl=curl_init('http://127.0.0.1:8000/api/exams/preview');
+    $curl=curl_init(pythonBaseUrl() . '/api/exams/preview');
     curl_setopt_array($curl,[CURLOPT_POST=>true,CURLOPT_RETURNTRANSFER=>true,
         CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>130,
         CURLOPT_HTTPHEADER=>['Content-Type: application/json','Accept: application/json'],
